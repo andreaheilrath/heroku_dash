@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+import sys
+
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
@@ -85,7 +87,11 @@ def generate_network(n):
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-server = app.server
+
+if not "-l" in sys.argv:
+    server = app.server
+else:
+    print("Running in local mode.")
 
 
 # Erzeuge den Anfangsplot - hier wird n auf 64 gesetzt
