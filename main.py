@@ -40,7 +40,7 @@ app.layout = html.Div([
     html.H1("Hello"),
     html.Div("Have fun with the progam!"),
     html.Br(),
-    dcc.Input(id='topic', type='text', value='Test'),
+    dcc.Input(id='topic', type='text', value='Linear algebra'),
     dcc.Input(id='depth', type='number', value=1),
     html.Button(id='submit-button-state', n_clicks=0, children='Start'),
     html.Div(id='output-state'),

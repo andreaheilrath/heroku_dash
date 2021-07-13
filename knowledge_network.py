@@ -1,6 +1,12 @@
 import wikipediaapi as wpa
+
+import requests
+import urllib.request as ur
+from bs4 import BeautifulSoup
+
 import networkx as nx
 import plotly.graph_objects as go
+
 import re
 import random
 import math
@@ -24,22 +30,29 @@ class KnowledgeGraph(nx.DiGraph):
         self.add_node(self.topic)
         self.nodes[self.topic]['pos'] = [0,0]
 
+        url = self.wiki.page(self.topic).fullurl
+        last_slash = url.rfind('/')
+        slug = '/wiki' + url[last_slash:]
+
+
+        self.nodes[self.topic]['slug'] = slug
+
         def add_links(origin, depth):
-            linked_topics = self.wiki.page(origin).links
-            for topic in linked_topics:
-                if valid(topic):
-                    if topic not in self:
-                        self.add_node(topic)
-                        phi = random.randrange(0,360)
-                        self.nodes[topic]['pos'] = \
-                        [self.nodes[origin]['pos'][0] + math.cos(phi)*pow(depth,2),\
-                        self.nodes[origin]['pos'][1]  - math.sin(phi)*pow(depth,2)]
-                    self.add_edge(origin, topic)
 
-                    if depth > 1:
-                        add_links(topic, depth-1)
+            links = get_links(self.nodes[origin]['slug'])
 
+            for topic in links:
+                if topic not in self:
+                    self.add_node(topic)
+                    self.nodes[topic]['slug'] = links[topic]
+                    phi = random.randrange(0,360)
+                    self.nodes[topic]['pos'] = \
+                    [self.nodes[origin]['pos'][0] + math.cos(phi)*pow(depth,2),\
+                    self.nodes[origin]['pos'][1]  - math.sin(phi)*pow(depth,2)]
+                self.add_edge(origin, topic)
 
+                if depth > 1:
+                    add_links(topic, depth-1)
 
         def valid(topic):
             for expression in self.exclude_start:
@@ -50,6 +63,29 @@ class KnowledgeGraph(nx.DiGraph):
                     return False
             return True
 
+        def get_links(slug, base_url = 'https://en.wikipedia.org/'):
+
+            page = requests.get(base_url + slug)
+
+            soup = BeautifulSoup(page.content, features = 'lxml')
+            article = soup.h1.string
+
+            elements = soup.find_all(['p', 'h2'])
+            links = []
+
+            for e in elements:
+                if e.name == 'h2': break
+                links.extend(e.find_all('a'))
+
+            link_dict = {}
+
+            for link in links:
+                try:
+                    link_dict[link['title']] = link['href']
+                except KeyError:
+                    pass
+
+            return link_dict
 
         add_links(self.topic, self.depth)
 
