@@ -85,7 +85,7 @@ class KnowledgeGraph(nx.DiGraph):
 
         add_links(self.topic, self.depth)
 
-def display(self):
+    def display(self):
 
         pos = nx.spring_layout(self)
         centrality = nx.degree_centrality(self)
