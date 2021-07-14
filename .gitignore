@@ -2,3 +2,4 @@ venv
 *.pyc
 .env
 .DS_Store
+enwiki-20210701-pages-articles-multistream.xml

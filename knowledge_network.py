@@ -45,10 +45,6 @@ class KnowledgeGraph(nx.DiGraph):
                 if topic not in self:
                     self.add_node(topic)
                     self.nodes[topic]['slug'] = links[topic]
-                    phi = random.randrange(0,360)
-                    self.nodes[topic]['pos'] = \
-                    [self.nodes[origin]['pos'][0] + math.cos(phi)*pow(depth,2),\
-                    self.nodes[origin]['pos'][1]  - math.sin(phi)*pow(depth,2)]
                 self.add_edge(origin, topic)
 
                 if depth > 1:
@@ -89,14 +85,19 @@ class KnowledgeGraph(nx.DiGraph):
 
         add_links(self.topic, self.depth)
 
-    def random_display(self):
-        node_x = []
-        node_y = []
-        node_text = []
+def display(self):
+
+        pos = nx.spring_layout(self)
+        centrality = nx.degree_centrality(self)
+
+        node_x, node_y, marker_size, node_text = [], [], [], []
 
         for node in self.nodes():          # hier werden Knoten aus dem Graph extrahiert
-            node_x.append(self.nodes[node]['pos'][0])
-            node_y.append(self.nodes[node]['pos'][1])
+            self.nodes[node]['pos'] = pos[node]
+            self.nodes[node]['centrality'] = centrality[node]
+            node_x.append(pos[node][0])
+            node_y.append(pos[node][1])
+            marker_size.append(pow(centrality[node], 0.5)*100)
             node_text.append(node)
 
         node_trace = go.Scatter(         # erzeugt den Plot der die Knoten darstellt
@@ -107,7 +108,7 @@ class KnowledgeGraph(nx.DiGraph):
                 showscale=True,
                 colorscale='YlGnBu',
                 reversescale=True,
-                size=10,
+                size=marker_size,
                 colorbar=dict(
                     thickness=15,
                     title='Node Connections',

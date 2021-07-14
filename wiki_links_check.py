@@ -15,12 +15,16 @@ wiki = wpa.Wikipedia('en')
 
 def get_links(slug, base_url = 'https://en.wikipedia.org/'):
 
+    start = time.time()
+
     page = requests.get(base_url + slug)
+
+    mid = time.time()
 
     soup = BeautifulSoup(page.content, features = 'lxml')
     article = soup.h1.string
 
-    elements = soup.find_all(['p', 'h2'])
+    elements = soup.find('div', class_='mw-parser-output').find_all(['p', 'h2'])
     links = []
 
     for e in elements:
@@ -35,15 +39,18 @@ def get_links(slug, base_url = 'https://en.wikipedia.org/'):
         except KeyError:
             pass
 
+    end = time.time()
+
+    print('request duration', mid-start, 'other', end-mid)
+
     return link_dict
 
 #===============================================================================
 
-start = time.time()
 
-slug = 'wiki/Linear_algebra'
+slug = 'wiki/Barack_Obama'
+#slug = 'wiki/Linear_algebra'
+
 links = get_links(slug)
 
-print(links)
-
-print(time.time()-start)
+#print(links)

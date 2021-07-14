@@ -93,7 +93,7 @@ def update_figure(n_klicks, topic, depth):
     '''
     graph = kn.KnowledgeGraph(topic, depth)
     graph.build()
-    fig = go.Figure(data= graph.random_display(),
+    fig = go.Figure(data= graph.display(),
                  layout=go.Layout(
                     showlegend=False,
                     hovermode='closest',
