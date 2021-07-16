@@ -1,5 +1,3 @@
-import wikipediaapi as wpa
-
 import requests
 import urllib.request as ur
 from bs4 import BeautifulSoup
@@ -12,30 +10,36 @@ import random
 import math
 
 
-class KnowledgeGraph(nx.DiGraph):
-    def __init__(self, topic, depth):
+class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
+    def __init__(self, topic, depth, base_url = "http://192.168.178.41:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/"):
         super().__init__()
         self.topic = topic
         self.depth = depth
-        self.wiki = wpa.Wikipedia('en')
+        self.base_url = base_url
 
         self.exclude_start = ['Category:', 'Template:', 'Help:', 'Talk:', 'Wikipedia', "." ]
         self.exclude_any = ['(disambiguation)']
 
-        wiki_page = self.wiki.page(self.topic)
-        if not wiki_page.exists():
-            print("Error - page doesn't exist!\nPlease enter a valid page.")
+        def valid_article(article):
+            page = requests.get("https://en.wikipedia.org/w/index.php?search=" + article)
+            url = str(page.url)
+            slug = url[url.rfind('/')+1:]
+            soup = BeautifulSoup(page.content, features = 'lxml')
+            page_title = soup.h1.string
+            if article.lower() == page_title.lower():
+                return page_title, slug
+
+        proper_name, slug = valid_article(self.topic)
+        if proper_name:
+            self.topic = proper_name
+            self.slug = slug
+
 
     def build(self):
+
         self.add_node(self.topic)
         self.nodes[self.topic]['pos'] = [0,0]
-
-        url = self.wiki.page(self.topic).fullurl
-        last_slash = url.rfind('/')
-        slug = '/wiki' + url[last_slash:]
-
-
-        self.nodes[self.topic]['slug'] = slug
+        self.nodes[self.topic]['slug'] = self.slug
 
         def add_links(origin, depth):
 
@@ -46,7 +50,6 @@ class KnowledgeGraph(nx.DiGraph):
                     self.add_node(topic)
                     self.nodes[topic]['slug'] = links[topic]
                 self.add_edge(origin, topic)
-
                 if depth > 1:
                     add_links(topic, depth-1)
 
@@ -59,14 +62,14 @@ class KnowledgeGraph(nx.DiGraph):
                     return False
             return True
 
-        def get_links(slug, base_url = 'https://en.wikipedia.org/'):
+        def get_links(slug):#base_url = 'https://en.wikipedia.org/'):
 
-            page = requests.get(base_url + slug)
-
+            page = requests.get(self.base_url + slug)
             soup = BeautifulSoup(page.content, features = 'lxml')
             article = soup.h1.string
 
             elements = soup.find_all(['p', 'h2'])
+
             links = []
 
             for e in elements:
@@ -84,13 +87,17 @@ class KnowledgeGraph(nx.DiGraph):
             return link_dict
 
         add_links(self.topic, self.depth)
+        #print(self.nodes)
+        #print(self.edges)
 
     def display(self):
 
-        pos = nx.spring_layout(self)
+        pos = nx.kamada_kawai_layout(self)
+        #pos = nx.spring_layout(self)
         centrality = nx.degree_centrality(self)
 
         node_x, node_y, marker_size, node_text = [], [], [], []
+
 
         for node in self.nodes():          # hier werden Knoten aus dem Graph extrahiert
             self.nodes[node]['pos'] = pos[node]
@@ -98,10 +105,11 @@ class KnowledgeGraph(nx.DiGraph):
             node_x.append(pos[node][0])
             node_y.append(pos[node][1])
             marker_size.append(pow(centrality[node], 0.5)*100)
-            node_text.append(node)
+            node_text.append(str(node))
 
         node_trace = go.Scatter(         # erzeugt den Plot der die Knoten darstellt
             x=node_x, y=node_y,
+            #x=[0,1], y=[0,1],
             mode='markers',
             hoverinfo='text',
             marker=dict(                # bestimmt nur das aussehen der Knoten
@@ -131,6 +139,7 @@ class KnowledgeGraph(nx.DiGraph):
 
         edge_trace = go.Scatter(        # erzeugt den Plot der die Kanten darstellt
             x=edge_x, y=edge_y,
+            #x=[0,1], y=[0,1],
             line=dict(width=0.5, color='#888'),
             hoverinfo='none',
             mode='lines')
@@ -141,7 +150,7 @@ class KnowledgeGraph(nx.DiGraph):
 
         for node, adjacencies in enumerate(self.adjacency()):
             node_adjacencies.append(len(adjacencies[1]))
-            #node_text.append('# of connections: '+str(len(adjacencies[1])))
+            node_text.append('# of connections: '+str(len(adjacencies[1])))
 
         # die Farbe der Knoten wird auf die Anzahl an Verbindungen gesetzt
         node_trace.marker.color = node_adjacencies

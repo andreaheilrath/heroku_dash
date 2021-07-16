@@ -94,7 +94,7 @@ def update_figure(n_klicks, topic, depth):
     graph = kn.KnowledgeGraph(topic, depth)
     graph.build()
     fig = go.Figure(data= graph.display(),
-                 layout=go.Layout(
+                    layout=go.Layout(
                     showlegend=False,
                     hovermode='closest',
                     margin=dict(b=20,l=5,r=5,t=40),
@@ -108,4 +108,4 @@ def update_figure(n_klicks, topic, depth):
 # Server starten
 
 if __name__ == '__main__':
-    app.run_server(debug=True)
+    app.run_server(debug=True, port = 8000)

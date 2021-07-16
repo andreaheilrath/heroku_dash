@@ -15,7 +15,7 @@ wiki = wpa.Wikipedia('en')
 
 #===============================================================================
 
-def get_links(slug, base_url = 'https://en.wikipedia.org/'):
+def get_links(slug, base_url = 'http://141.23.210.106:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/'):
 
     start = time.time()
 
@@ -26,7 +26,8 @@ def get_links(slug, base_url = 'https://en.wikipedia.org/'):
     soup = BeautifulSoup(page.content, features = 'lxml')
     article = soup.h1.string
 
-    elements = soup.find('div', class_='mw-parser-output').find_all(['p', 'h2'])
+    #elements = soup.find('div', class_='mw-parser-output').find_all(['p', 'h2'])
+    elements = soup.find_all(['p', 'h2'])
     links = []
 
     for e in elements:
@@ -47,12 +48,22 @@ def get_links(slug, base_url = 'https://en.wikipedia.org/'):
 
     return link_dict
 
+def valid_article(article):
+    page = requests.get("https://en.wikipedia.org/w/index.php?search=" + article)
+    url = str(page.url)
+    slug = url[url.rfind('/')+1:]
+    print(slug)
+    soup = BeautifulSoup(page.content, features = 'lxml')
+    page_title = soup.h1.string
+    if article.lower() == page_title.lower():
+        return page_title, slug
+
 #===============================================================================
 
+title, slug = valid_article('Linear Algebra')
 
-slug = 'wiki/Barack_Obama'
-#slug = 'wiki/Linear_algebra'
 
-links = get_links(slug)
+print(get_links(slug))
 
+#links = get_links(slug, base_url = "http://141.23.210.106:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/")
 #print(links)
