@@ -28,12 +28,10 @@ class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
             page_title = soup.h1.string
             if article.lower() == page_title.lower():
                 return page_title, slug
+            else:
+                return None, None
 
-        proper_name, slug = valid_article(self.topic)
-        if proper_name:
-            self.topic = proper_name
-            self.slug = slug
-
+        self.topic, self.slug = valid_article(self.topic)
 
     def build(self):
 
@@ -80,7 +78,7 @@ class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
 
             for link in links:
                 try:
-                    link_dict[link['title']] = link['href']
+                    link_dict[str(link['title'])] = str(link['href'])
                 except KeyError:
                     pass
 
@@ -90,10 +88,13 @@ class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
         #print(self.nodes)
         #print(self.edges)
 
-    def display(self):
+    def display(self, function):
 
-        pos = nx.kamada_kawai_layout(self)
-        #pos = nx.spring_layout(self)
+        if function == 'spring_layout':
+            pos = nx.spring_layout(self)
+        else:
+            pos = nx.kamada_kawai_layout(self)
+
         centrality = nx.degree_centrality(self)
 
         node_x, node_y, marker_size, node_text = [], [], [], []

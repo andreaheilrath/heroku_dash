@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 import sys
+import time
 
 import dash
 import dash_core_components as dcc
@@ -12,41 +13,69 @@ import knowledge_network as kn
 
 
 #===============================================================================
-# Layout der App
+# basic stuff & global variables
 
-# das Stylesheet ändert primär Schriftarten
+# load external syle cheet (css)
 external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
+# create dash app
 app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 
+# check if running in local mode (-l)
 if not "-l" in sys.argv:
     server = app.server
 else:
     print("Running in local mode.")
 
+# define graph graph object
+graph = None
+sanity_check = False
 
+#===============================================================================
+# generate and style figure
 
-# Erzeuge den Anfangsplot - hier wird n auf 64 gesetzt
 fig = go.Figure(data = None,  # hier wird die Funktion von oben benutzt
-             layout=go.Layout(
+                layout=go.Layout(
+                height=900, width=1200,
                 showlegend=False,
                 hovermode='closest',
-                margin=dict(b=20,l=5,r=5,t=40), # ab hier nur Styling
+                margin=dict(b=5,l=5,r=5,t=40), # ab hier nur Styling
                 xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
                 yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
                 )
 
+#===============================================================================
+# Define App Layout
+
 app.layout = html.Div([
-    html.H1("Hello"),
-    html.Div("Have fun with the progam!"),
+    html.H1("Wikipedia Link Graph"),
+    html.P("This app generates a graph, starting from one wikipedia page, \
+    'klicking' all the links in the article's summary and does the same with the\
+    linked articles. The graph shows all articles as bubbles and all links as lines."),
     html.Br(),
-    dcc.Input(id='topic', type='text', value='Linear algebra'),
-    dcc.Input(id='depth', type='number', value=1),
+    dcc.Input(id='topic', type='text', value='Python (programming language)',\
+              placeholder="topic"),
+    dcc.Input(id='depth', type='number', value=2,\
+              placeholder="search depth"),
     html.Button(id='submit-button-state', n_clicks=0, children='Start'),
-    html.Div(id='output-state'),
     html.Br(),
+    html.Br(),
+    dcc.Markdown(id='current_state'),
+    html.Br(),
+
+    dcc.Dropdown(
+        id='layout_dropdown',
+        options=[
+            {'label': 'Kamada Kawai Layout', 'value': 'kamada_kawai_layout'},
+            {'label': 'Spring Layout', 'value': 'spring_layout'}
+        ],
+        value='kamada_kawai_layout'
+    ),
+
+    dcc.Markdown(id='dropdown_entry'),
+
     dcc.Graph(
-        id='example-graph',
+        id='knowledge-graph',
         figure=fig
     )
 ])
@@ -56,52 +85,58 @@ app.layout = html.Div([
 #===============================================================================
 # Callbacks - Interaktion mit der Benutzeroberfläche
 
-
 # Mit @ wird ein sogenannter "Decorater" benutzt.
 # Der Decorator führt dazu, dass die Funktion, die darunter deklariert wird
 # (hier update_output) die Funktionalität des Decorators erhält.
 # Hier werden Input, Output, State vom Paket dash.dependencies verwendet (siehe import).
 # Wichtig ist, dass Inputs und Outputs mit den Argumenten und Returns der Funktion zusammenpassen!
 
-@app.callback(Output('output-state', 'children'),
+
+@app.callback(Output('current_state', 'children'),
               Input('submit-button-state', 'n_clicks'),
               State('topic', 'value'),
               State('depth', 'value'))
 
-def update_output(n_clicks, input1, input2):
-
-
-    '''
-    displays the user inputs on the page
-    '''
-    return u'''
-        The program was started {} times,\n
-        the topic is "{}",
-        and the depth is "{}"
-    '''.format(n_clicks, input1, input2)
-
-
-@app.callback(Output('example-graph', 'figure'),
-              Input('submit-button-state', 'n_clicks'),
-              State('topic', 'value'),
-              State('depth', 'value'))
-
-def update_figure(n_klicks, topic, depth):
-    '''
-    generates a random network and corresponding plots
-    figure is updated with the new plots
-    '''
+def sanity_check(n_clicks, topic, depth):
+    global graph
     graph = kn.KnowledgeGraph(topic, depth)
-    graph.build()
-    fig = go.Figure(data= graph.display(),
-                    layout=go.Layout(
-                    showlegend=False,
-                    hovermode='closest',
-                    margin=dict(b=20,l=5,r=5,t=40),
-                    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False))
-                    )
-    return fig
+
+    if graph.topic:
+        output = '''
+            The current topic is **{}**
+            and the depth of the network is **{}**.
+        '''.format(topic, depth)
+
+    else:
+        output = "Topic does not exist."
+
+    return output
+
+
+@app.callback(Output('knowledge-graph', 'figure'),
+              Input('current_state', 'children'),
+              State('knowledge-graph', 'figure'),
+              State('layout_dropdown', 'value'))
+
+def update_figure(text, figure, layout):
+    global graph
+    if text == 'Topic does not exist.':
+        figure['data'] = None
+    else:
+        graph.build()
+        figure['data'] = graph.display(layout)
+
+    return figure
+
+
+
+@app.callback(Output('dropdown_entry', 'children'),
+              Input('layout_dropdown', 'value'),
+              prevent_initial_callbacks=True
+)
+
+def update_xyz(layout):
+    return layout
 
 
 #===============================================================================
