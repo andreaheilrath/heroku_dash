@@ -29,14 +29,15 @@ else:
 
 # define graph graph object
 graph = None
-sanity_check = False
+start_layout = 'kamada_kawai_layout'
 
 #===============================================================================
 # generate and style figure
 
 fig = go.Figure(data = None,  # hier wird die Funktion von oben benutzt
                 layout=go.Layout(
-                height=900, width=1200,
+                height = 900,
+                #height=900, width=1200,
                 showlegend=False,
                 hovermode='closest',
                 margin=dict(b=5,l=5,r=5,t=40), # ab hier nur Styling
@@ -57,22 +58,25 @@ app.layout = html.Div([
               placeholder="topic"),
     dcc.Input(id='depth', type='number', value=2,\
               placeholder="search depth"),
-    html.Button(id='submit-button-state', n_clicks=0, children='Start'),
+    html.Button(id='start_button', n_clicks=0, children='Start'),
     html.Br(),
     html.Br(),
-    dcc.Markdown(id='current_state'),
+    dcc.Markdown(id='text_output'),
     html.Br(),
 
     dcc.Dropdown(
         id='layout_dropdown',
         options=[
             {'label': 'Kamada Kawai Layout', 'value': 'kamada_kawai_layout'},
-            {'label': 'Spring Layout', 'value': 'spring_layout'}
+            {'label': 'Shell Layout', 'value': 'shell_layout'},
+            {'label': 'Spring Layout', 'value': 'spring_layout'},
+            {'label': 'Spectral Layout', 'value': 'spectral_layout'},
+            {'label': 'Spiral Layout', 'value': 'spiral_layout'}
         ],
-        value='kamada_kawai_layout'
+        value=start_layout
     ),
 
-    dcc.Markdown(id='dropdown_entry'),
+    dcc.Markdown(id='dropdown_entry', children = ''),
 
     dcc.Graph(
         id='knowledge-graph',
@@ -92,14 +96,14 @@ app.layout = html.Div([
 # Wichtig ist, dass Inputs und Outputs mit den Argumenten und Returns der Funktion zusammenpassen!
 
 
-@app.callback(Output('current_state', 'children'),
-              Input('submit-button-state', 'n_clicks'),
+@app.callback(Output('text_output', 'children'),
+              Input('start_button', 'n_clicks'),
               State('topic', 'value'),
               State('depth', 'value'))
 
 def sanity_check(n_clicks, topic, depth):
     global graph
-    graph = kn.KnowledgeGraph(topic, depth)
+    graph = kn.KnowledgeGraph(topic, depth, start_layout)
 
     if graph.topic:
         output = '''
@@ -114,7 +118,7 @@ def sanity_check(n_clicks, topic, depth):
 
 
 @app.callback(Output('knowledge-graph', 'figure'),
-              Input('current_state', 'children'),
+              Input('text_output', 'children'),
               State('knowledge-graph', 'figure'),
               State('layout_dropdown', 'value'))
 
@@ -124,19 +128,28 @@ def update_figure(text, figure, layout):
         figure['data'] = None
     else:
         graph.build()
-        figure['data'] = graph.display(layout)
+        figure['data'] = graph.display()
 
     return figure
 
 
 
 @app.callback(Output('dropdown_entry', 'children'),
+              Output('knowledge-graph', 'figure'),
               Input('layout_dropdown', 'value'),
-              prevent_initial_callbacks=True
-)
+              Input('text_output', 'children'),
+              State('knowledge-graph', 'figure')
+              )
 
-def update_xyz(layout):
-    return layout
+def update_xyz(layout, text, figure):
+    global graph
+    if layout == graph.layout:
+        return None, figure
+    else:
+        graph.layout = layout
+        figure['data'] = graph.display()
+        display = 'Changing to ' + layout
+        return None, figure
 
 
 #===============================================================================

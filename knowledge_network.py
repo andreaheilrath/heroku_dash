@@ -11,11 +11,19 @@ import math
 
 
 class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
-    def __init__(self, topic, depth, base_url = "http://192.168.178.41:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/"):
+    def __init__(self, topic, depth, layout, base_url = "http://192.168.0.9:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/"):
         super().__init__()
         self.topic = topic
         self.depth = depth
+        self.layout = layout
         self.base_url = base_url
+
+        self.layout_dict = {'kamada_kawai_layout': nx.kamada_kawai_layout,
+                            'shell_layout' : nx.shell_layout,
+                            'spring_layout': nx.spring_layout,
+                            'spectral_layout': nx.spectral_layout,
+                            'spiral_layout': nx.spiral_layout
+                            }
 
         self.exclude_start = ['Category:', 'Template:', 'Help:', 'Talk:', 'Wikipedia', "." ]
         self.exclude_any = ['(disambiguation)']
@@ -85,15 +93,11 @@ class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
             return link_dict
 
         add_links(self.topic, self.depth)
-        #print(self.nodes)
-        #print(self.edges)
 
-    def display(self, function):
+    def display(self):
 
-        if function == 'spring_layout':
-            pos = nx.spring_layout(self)
-        else:
-            pos = nx.kamada_kawai_layout(self)
+        layout = self.layout_dict[self.layout]
+        pos = layout(self)
 
         centrality = nx.degree_centrality(self)
 
