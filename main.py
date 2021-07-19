@@ -115,7 +115,7 @@ def check_if_article_exists(n_clicks, topic, depth):
         '''.format(topic, depth)
 
     else:
-        output = "Topic does not exist."
+        output = "**Topic does not exist.**"
 
     return output
 
@@ -138,7 +138,7 @@ def update_figure(text, dropdown, figure, layout):
         display = 'Changing to ' + layout
         return figure
     else:
-        if text == 'Topic does not exist.':
+        if text == '**Topic does not exist.**':
             figure['data'] = None
         else:
             graph.build()

@@ -40,13 +40,12 @@ class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
 
         self.add_node(self.topic)
         self.nodes[self.topic]['slug'] = self.slug
-        print(self.topic, self.slug)
 
         def add_links(origin, depth):
 
             links = get_links(self.nodes[origin]['slug'])
             for topic in links:
-                print(topic)
+                #print(topic)
                 if topic not in self:
                     self.add_node(topic)
                     self.nodes[topic]['slug'] = links[topic]
