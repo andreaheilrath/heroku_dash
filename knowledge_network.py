@@ -27,8 +27,6 @@ class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
             page = requests.get("https://en.wikipedia.org/w/index.php?search=" + article)
             url = str(page.url)
             slug = url[url.rfind('/')+1:]
-            if not self.local:
-                slug = '/wiki/' + slug
             soup = BeautifulSoup(page.content, features = 'lxml')
             page_title = soup.h1.string
             if article.lower() == page_title.lower():
@@ -41,14 +39,14 @@ class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
     def build(self):
 
         self.add_node(self.topic)
-        self.nodes[self.topic]['pos'] = [0,0]
         self.nodes[self.topic]['slug'] = self.slug
+        print(self.topic, self.slug)
 
         def add_links(origin, depth):
 
             links = get_links(self.nodes[origin]['slug'])
-
             for topic in links:
+                print(topic)
                 if topic not in self:
                     self.add_node(topic)
                     self.nodes[topic]['slug'] = links[topic]
@@ -65,32 +63,37 @@ class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
                     return False
             return True
 
-        def get_links(slug):#base_url = 'https://en.wikipedia.org/'):
+        def get_links(slug):
+
+            def to_dict(links, shift=0):
+                link_dict = {}
+                for link in links:
+                    try:
+                        link_dict[link['title']] = link['href'][shift:]
+                        print(link['href'][shift:])
+                    except KeyError:
+                        pass
+                return link_dict
 
             page = requests.get(self.base_url + slug)
             soup = BeautifulSoup(page.content, features = 'lxml')
             article = soup.h1.string
 
-            elements = soup.find_all(['p', 'h2'])
-
             links = []
-
+            elements = soup.find_all(['p', 'h2'])
             for e in elements:
                 if e.name == 'h2': break
                 links.extend(e.find_all('a'))
 
-            link_dict = {}
-
-            for link in links:
-                try:
-                    link_dict[str(link['title'])] = link['href']
-                    print(link['href'])
-                except KeyError:
-                    pass
+            if self.local:
+                link_dict = to_dict(links)
+            else:
+                link_dict = to_dict(links, 6)
 
             return link_dict
 
         add_links(self.topic, self.depth)
+
 
     def display(self):
 

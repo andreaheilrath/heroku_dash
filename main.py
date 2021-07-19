@@ -20,15 +20,15 @@ import knowledge_network as kn
 app = dash.Dash(__name__) #, external_stylesheets=external_stylesheets)
 
 # check if running in local mode (-l)
-if not "-l" in sys.argv:
-    #server = app.server
-    base_url = "https://en.wikipedia.org"
-    local = False
-else:
-    #base_url = "http://192.168.178.41:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/"
-    base_url = "https://en.wikipedia.org/wiki/"
+if not "-local" in sys.argv:
+    server = app.server
+
+if "-kiwix" in sys.argv:
+    base_url = "http://192.168.0.9:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/"
     local = True
-    print("Running in local mode.")
+else:
+    base_url = "https://en.wikipedia.org/wiki/"
+    local = False
 
 # define graph graph object
 graph = None
