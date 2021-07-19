@@ -69,7 +69,7 @@ class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
                 for link in links:
                     try:
                         link_dict[link['title']] = link['href'][shift:]
-                        print(link['href'][shift:])
+                        #print(link['href'][shift:])
                     except KeyError:
                         pass
                 return link_dict
