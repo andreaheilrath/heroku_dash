@@ -21,10 +21,13 @@ app = dash.Dash(__name__) #, external_stylesheets=external_stylesheets)
 
 # check if running in local mode (-l)
 if not "-l" in sys.argv:
-    server = app.server
-    base_url = "https://en.wikipedia.org/wiki/"
+    #server = app.server
+    base_url = "https://en.wikipedia.org"
+    local = False
 else:
-    base_url = "http://192.168.178.41:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/"
+    #base_url = "http://192.168.178.41:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/"
+    base_url = "https://en.wikipedia.org/wiki/"
+    local = True
     print("Running in local mode.")
 
 # define graph graph object
@@ -101,9 +104,9 @@ app.layout = html.Div(className="app",
               State('topic', 'value'),
               State('depth', 'value'))
 
-def sanity_check(n_clicks, topic, depth):
+def check_if_article_exists(n_clicks, topic, depth):
     global graph
-    graph = kn.KnowledgeGraph(topic, depth, start_layout)
+    graph = kn.KnowledgeGraph(topic, depth, start_layout, base_url, local)
 
     if graph.topic:
         output = '''
@@ -119,37 +122,29 @@ def sanity_check(n_clicks, topic, depth):
 
 @app.callback(Output('knowledge-graph', 'figure'),
               Input('text_output', 'children'),
+              Input('layout_dropdown', 'value'),
               State('knowledge-graph', 'figure'),
               State('layout_dropdown', 'value'))
 
-def update_figure(text, figure, layout):
+def update_figure(text, dropdown, figure, layout):
+    #print(text, dropdown, figure, layout)
+    ctx = dash.callback_context
+    input_id = ctx.triggered[0]["prop_id"].split(".")[0]
     global graph
-    if text == 'Topic does not exist.':
-        figure['data'] = None
-    else:
-        graph.build()
-        figure['data'] = graph.display()
 
-    return figure
-
-
-
-@app.callback(Output('dropdown_entry', 'children'),
-              Output('knowledge-graph', 'figure'),
-              Input('layout_dropdown', 'value'),
-              Input('text_output', 'children'),
-              State('knowledge-graph', 'figure')
-              )
-
-def update_xyz(layout, text, figure):
-    global graph
-    if layout == graph.layout:
-        return None, figure
-    else:
-        graph.layout = layout
+    if input_id == "layout_dropdown":
+        graph.layout = ctx.triggered[0]["value"]
         figure['data'] = graph.display()
         display = 'Changing to ' + layout
-        return None, figure
+        return figure
+    else:
+        if text == 'Topic does not exist.':
+            figure['data'] = None
+        else:
+            graph.build()
+            figure['data'] = graph.display()
+
+        return figure
 
 
 #===============================================================================

@@ -5,12 +5,13 @@ import plotly.graph_objects as go
 
 
 class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
-    def __init__(self, topic, depth, layout, base_url = "http://192.168.178.41:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/"):
+    def __init__(self, topic, depth, layout, base_url, local):
         super().__init__()
         self.topic = topic
         self.depth = depth
         self.layout = layout
         self.base_url = base_url
+        self.local = local
 
         self.layout_dict = {'kamada_kawai_layout': nx.kamada_kawai_layout,
                             'shell_layout' : nx.shell_layout,
@@ -26,6 +27,8 @@ class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
             page = requests.get("https://en.wikipedia.org/w/index.php?search=" + article)
             url = str(page.url)
             slug = url[url.rfind('/')+1:]
+            if not self.local:
+                slug = '/wiki/' + slug
             soup = BeautifulSoup(page.content, features = 'lxml')
             page_title = soup.h1.string
             if article.lower() == page_title.lower():
@@ -80,7 +83,8 @@ class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
 
             for link in links:
                 try:
-                    link_dict[str(link['title'])] = str(link['href'])
+                    link_dict[str(link['title'])] = link['href']
+                    print(link['href'])
                 except KeyError:
                     pass
 

@@ -5,15 +5,20 @@ body {
   font-family: 'Inter', sans-serif;
 }
 
+h1 {
+  font-size: 60px
+}
+
 .header {
     margin: auto;
-    max-width: 650px;
+    max-width: 800px;
+    text-align: center;
 }
 
 .input-container {
     margin: auto;
-    padding-bottom: 60px;
-    max-width: 650px;
+    padding: 20px 0px 60px 0px;
+    max-width: 500px;
 }
 
 
