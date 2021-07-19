@@ -1,17 +1,11 @@
 import requests
-import urllib.request as ur
 from bs4 import BeautifulSoup
-
 import networkx as nx
 import plotly.graph_objects as go
 
-import re
-import random
-import math
-
 
 class KnowledgeGraph(nx.DiGraph):#http://192.168.178.41:8181
-    def __init__(self, topic, depth, layout, base_url = "http://192.168.0.9:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/"):
+    def __init__(self, topic, depth, layout, base_url = "http://192.168.178.41:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/"):
         super().__init__()
         self.topic = topic
         self.depth = depth

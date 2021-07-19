@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap');
+
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+.header {
+    margin: auto;
+    max-width: 650px;
+}
+
+.input-container {
+    margin: auto;
+    padding-bottom: 60px;
+    max-width: 650px;
+}
+
+
+
+#topic, #depth {
+  font-family: 'Inter', sans-serif;
+  font-size: 18px;
+  margin: 10px 10px 0px 0px;
+  border: none;
+  border-bottom: 1px solid black;
+}
+
+#topic {
+  width: 360px;
+}
+
+#depth {
+  width: 40px;
+}
+
+
+#start_button {
+  font-family: 'Inter', sans-serif;
+  padding: 6px, 20px, 6px, 20px;
+  font-size: 18px;
+  background-color: #e8ecf4;
+  color: black;
+  border: 2px solid #e8ecf4;
+  border-radius: 4px;
+  transition-duration: 0.4s;
+}
+
+#start_button:hover {
+  background-color: white;
+}
+
+.graph {
+  width: 80%;
+  margin: auto;
+}
+
+#layout_dropdown {
+  margin: -650px 0px 0px 5px;
+  max-width: 360px;
+}
+
+#knowledge-graph {
+  height: 650px;
+}
+
+#text_output {
+  margin: 650px 0px 0px 5px;
+}

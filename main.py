@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import sys
-import time
 
 import dash
 import dash_core_components as dcc
@@ -11,20 +10,21 @@ import plotly.graph_objects as go
 import knowledge_network as kn
 
 
-
 #===============================================================================
 # basic stuff & global variables
 
 # load external syle cheet (css)
-external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css']
+#external_stylesheets = ['style.css']#['https://codepen.io/chriddyp/pen/bWLwgP.css']
 
 # create dash app
-app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+app = dash.Dash(__name__) #, external_stylesheets=external_stylesheets)
 
 # check if running in local mode (-l)
 if not "-l" in sys.argv:
     server = app.server
+    base_url = "https://en.wikipedia.org/wiki/"
 else:
+    base_url = "http://192.168.178.41:8181/7fe4cca9-607f-5932-c685-9a22c1c410b5/A/"
     print("Running in local mode.")
 
 # define graph graph object
@@ -36,7 +36,6 @@ start_layout = 'kamada_kawai_layout'
 
 fig = go.Figure(data = None,  # hier wird die Funktion von oben benutzt
                 layout=go.Layout(
-                height = 900,
                 #height=900, width=1200,
                 showlegend=False,
                 hovermode='closest',
@@ -48,22 +47,29 @@ fig = go.Figure(data = None,  # hier wird die Funktion von oben benutzt
 #===============================================================================
 # Define App Layout
 
-app.layout = html.Div([
+app.layout = html.Div(className="app",
+    children = [
+    html.Div(className="header", children = [
     html.H1("Wikipedia Link Graph"),
-    html.P("This app generates a graph, starting from one wikipedia page, \
-    'klicking' all the links in the article's summary and does the same with the\
-    linked articles. The graph shows all articles as bubbles and all links as lines."),
+    html.P("This app generates a graph based on links between Wikipedia articles. "),
+    html.P(["You can determine the article to start with.",
+    " All linked articles in the article's summary will be added to the graph. ",
+    "If the depth is greater than one, the links of the linked articles will be added and so on ... ",
     html.Br(),
-    dcc.Input(id='topic', type='text', value='Python (programming language)',\
+    "The graph shows all articles as bubbles and all links as lines."]),
+    ]),
+    html.Div(className = "input-container", children =[
+    dcc.Input(className="input", id='topic', type='text', value='Python (programming language)',\
               placeholder="topic"),
-    dcc.Input(id='depth', type='number', value=2,\
+    dcc.Input(className="input", id='depth', type='number', value=2,\
               placeholder="search depth"),
-    html.Button(id='start_button', n_clicks=0, children='Start'),
-    html.Br(),
-    html.Br(),
-    dcc.Markdown(id='text_output'),
-    html.Br(),
-
+    html.Button(className="input", id='start_button', n_clicks=0, children='Start')
+    ]),
+    html.Div(className="graph", children = [
+    dcc.Graph(
+        id='knowledge-graph',
+        figure=fig
+    ),
     dcc.Dropdown(
         id='layout_dropdown',
         options=[
@@ -73,15 +79,9 @@ app.layout = html.Div([
             {'label': 'Spectral Layout', 'value': 'spectral_layout'},
             {'label': 'Spiral Layout', 'value': 'spiral_layout'}
         ],
-        value=start_layout
-    ),
-
-    dcc.Markdown(id='dropdown_entry', children = ''),
-
-    dcc.Graph(
-        id='knowledge-graph',
-        figure=fig
-    )
+        value=start_layout),
+    dcc.Markdown(id='text_output')
+    ])
 ])
 
 
