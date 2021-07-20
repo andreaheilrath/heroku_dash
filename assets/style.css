@@ -17,7 +17,7 @@ h1 {
 
 .input-container {
     margin: auto;
-    padding: 20px 0px 60px 0px;
+    padding: 25px 0px 35px 0px;
     max-width: 500px;
 }
 
@@ -61,16 +61,16 @@ h1 {
 }
 
 #layout_dropdown {
-  margin: -650px 0px 0px 5px;
+  margin: -80vh 0px 0px 5px;
   max-width: 260px;
 }
 
 #knowledge-graph {
-  height: 650px;
+  height: 80vh;
 }
 
 #summary {
-  margin: 630px 5px 30px 5px;
+  margin: 78vh 5px 30px 5px;
 }
 
 #table {
