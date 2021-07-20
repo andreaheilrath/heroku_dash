@@ -3,6 +3,7 @@
 
 body {
   font-family: 'Inter', sans-serif;
+  font-size: 16px;
 }
 
 h1 {
@@ -17,19 +18,17 @@ h1 {
 
 .input-container {
     margin: auto;
-    padding: 25px 0px 35px 0px;
     max-width: 500px;
+    padding: 25px 0px 35px 0px;
 }
 
-
-
-#topic, #depth {
-  font-family: 'Inter', sans-serif;
-  font-size: 18px;
+input {
+  font: 400 18px Inter;
   margin: 10px 10px 0px 0px;
   border: none;
   border-bottom: 1px solid black;
 }
+
 
 #topic {
   width: 360px;
@@ -41,7 +40,6 @@ h1 {
 
 
 #start_button {
-  font-family: 'Inter', sans-serif;
   padding: 6px, 20px, 6px, 20px;
   font-size: 18px;
   background-color: #e8ecf4;

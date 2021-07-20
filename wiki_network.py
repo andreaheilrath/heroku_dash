@@ -6,6 +6,8 @@ import plotly.graph_objects as go
 
 def build(topic, depth, slug, local, base_url):
 
+    #print('\n======================================== \nBuilding new graph around', topic, 'depth', depth, '\n======================================== ')
+
     self = nx.DiGraph()
 
     self.add_node(topic)
@@ -15,6 +17,7 @@ def build(topic, depth, slug, local, base_url):
         links = get_links(self.nodes[origin]['slug'])
         for topic in links:
             if topic not in self:
+                #print(topic, links[topic])
                 self.add_node(topic)
                 self.nodes[topic]['slug'] = links[topic]
             self.add_edge(origin, topic)
@@ -51,6 +54,8 @@ def build(topic, depth, slug, local, base_url):
         return link_dict
 
     add_links(topic, depth)
+
+    #print('\n======================================== \n Done! \n========================================')
 
     return nx.node_link_data(self)
 
@@ -102,7 +107,8 @@ def display(json_graph, layout):
         edge_y.extend([pos[edge[0]][1], pos[edge[1]][1], None])
 
     edge_trace = go.Scatter(x=edge_x, y=edge_y,
-                            line=dict(width=0.5, color='#888'))
+                            line=dict(width=0.5, color='#888'),
+                            hoverinfo='none')
 
     return [edge_trace, node_trace]
 
